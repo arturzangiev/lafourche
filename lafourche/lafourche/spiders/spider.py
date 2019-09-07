@@ -20,7 +20,7 @@ class SpiderSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        urls = response.xpath('//h2[@class="productitem--title"]/a/@href').extract()
+        urls = response.xpath('//div[@class="product-card-info"]/a/@href').extract()
         for url in urls:
             full_url = response.urljoin(url)
             yield scrapy.Request(full_url, callback=self.individual_page)
@@ -32,11 +32,11 @@ class SpiderSpider(scrapy.Spider):
 
     def individual_page(self, response):
         fields = dict()
-        fields["base_price"] = response.xpath('//div[@class="price--compare-at visible"]/span/text()').re_first('(\d+\,\d+)')
-        fields["discounted_price"] = response.xpath('//div[@class="price--main"]/span/text()').re_first('(\d+\,\d+)')
-        fields["product_name"] = response.xpath('//h1[@class="product-title"]/text()').extract_first().strip()
+        fields["base_price"] = response.xpath('//span[@class="text-transparent--x5"]/s/text()').re_first('(\d+\,\d+)')
+        fields["discounted_price"] = response.xpath('//span[@class="h2 text-bold"]/text()').re_first('(\d+\,\d+)')
+        fields["product_name"] = response.xpath('//h1/text()').extract_first().strip()
         fields["category"] = response.url.split("/")[4]
-        fields["brand"] = response.xpath('//div[@class="product-vendor"]/text()').extract_first().strip()
-        fields["description"] = response.xpath('//meta[@property="og:description"]/@content').extract_first()
+        fields["brand"] = response.xpath('//p[@class="product-info__subtitle"]/a/text()').extract_first().strip()
+        fields["description"] = response.xpath('//div[@class="max-width--700"]/text()').extract_first().strip()
 
         yield fields
